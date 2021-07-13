@@ -4,12 +4,12 @@ version = 3
 
 [[package]]
 name = "dma"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "num_traits",
 ]
 
 [[package]]
 name = "num_traits"
-version = "0.1.0"
-source = "git+https://github.com/shetr/num_traits.git#3c89089ff3ab8b1a9bc94d830c7668a92e9e5b25"
+version = "0.2.0"
+source = "git+https://github.com/shetr/num_traits.git#334aaf070a7db1aaf43b47daacf58f0444ad44f3"
