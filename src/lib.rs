@@ -1,7 +1,7 @@
 
 use std::cmp::PartialEq;
 use std::ops::Rem;
-use std::default::Default;
+use num_traits::Zero;
 
 /// Returns true if `a` divides `b`. Otherwise returns false.
 ///
@@ -20,15 +20,17 @@ use std::default::Default;
 /// assert_eq!(divides(5, -7), false);
 /// ```
 pub fn divides<T>(a: T, b: T) -> bool
-    where T: PartialEq + Rem<Output = T> + Default
+    where T: PartialEq + Rem<Output = T> + Zero
 {
-    if a != Default::default() { b % a == Default::default() } else { true }
+    if a != T::zero() { b % a == T::zero() } else { true }
 }
 
 /// Returns true if `b` is divisible by `a`. Otherwise returns false.
 /// `b` is divisible by `a` if `a` divides `b`. 
 /// Go to [divides] for further information.
-pub fn is_divisible_by(a: i32, b: i32) -> bool {
+pub fn is_divisible_by<T>(a: T, b: T) -> bool
+    where T: PartialEq + Rem<Output = T> + Zero
+{
     divides(b, a)
 }
 
