@@ -30,8 +30,8 @@ pub fn divides<T>(a: T, b: T) -> bool
     if a != T::zero() { b % a == T::zero() } else { true }
 }
 
-/// Returns true if `b` is divisible by `a`. Otherwise returns false.
-/// `b` is divisible by `a` if `a` divides `b`. 
+/// Returns true if `a` is divisible by `b`. Otherwise returns false.
+/// `a` is divisible by `b` if `b` divides `a`. 
 /// Go to [divides] for further information.
 pub fn is_divisible_by<T>(a: T, b: T) -> bool
     where T: PartialEq + Rem<Output = T> + Zero
@@ -96,69 +96,76 @@ mod tests {
 
     use super::*;
 
+    fn test_divides<T>(a: T, b: T, result: bool)
+        where T: PartialEq + Rem<Output = T> + Clone + Zero
+    {
+        assert_eq!(divides(a.clone(), b.clone()), result);
+        assert_eq!(is_divisible_by(b, a), result);
+    }
+
     #[test]
     fn divides_0_0() {
-        assert_eq!(divides(0, 0), true);
+        test_divides(0, 0, true);
     }
     #[test]
     fn divides_0_1() {
-        assert_eq!(divides(0, 1), true);
+        test_divides(0, 1, true);
     }
     #[test]
     fn divides_1_0() {
-        assert_eq!(divides(1, 0), true);
+        test_divides(1, 0, true);
     }
     #[test]
     fn divides_1_1() {
-        assert_eq!(divides(1, 1), true);
+        test_divides(1, 1, true);
     }
     #[test]
     fn divides_1_2() {
-        assert_eq!(divides(1, 2), true);
+        test_divides(1, 2, true);
     }
     #[test]
     fn divides_2_6() {
-        assert_eq!(divides(2, 6), true);
+        test_divides(2, 6, true);
     }
     #[test]
     fn divides_2_5() {
-        assert_eq!(divides(2, 5), false);
+        test_divides(2, 5, false);
     }
     #[test]
     fn divides_0_m1() {
-        assert_eq!(divides(0, -1), true);
+        test_divides(0, -1, true);
     }
     #[test]
     fn divides_m1_0() {
-        assert_eq!(divides(-1, 0), true);
+        test_divides(-1, 0, true);
     }
     #[test]
     fn divides_m1_m1() {
-        assert_eq!(divides(-1, -1), true);
+        test_divides(-1, -1, true);
     }
     #[test]
     fn divides_m2_6() {
-        assert_eq!(divides(-2, 6), true);
+        test_divides(-2, 6, true);
     }
     #[test]
     fn divides_2_m6() {
-        assert_eq!(divides(2, -6), true);
+        test_divides(2, -6, true);
     }
     #[test]
     fn divides_m2_m6() {
-        assert_eq!(divides(-2, -6), true);
+        test_divides(-2, -6, true);
     }
     #[test]
     fn divides_m2_5() {
-        assert_eq!(divides(-2, 5), false);
+        test_divides(-2, 5, false);
     }
     #[test]
     fn divides_2_m5() {
-        assert_eq!(divides(2, -5), false);
+        test_divides(2, -5, false);
     }
     #[test]
     fn divides_m2_m5() {
-        assert_eq!(divides(-2, -5), false);
+        test_divides(-2, -5, false);
     }
 
 
