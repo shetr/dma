@@ -39,6 +39,20 @@ pub fn is_divisible_by<T>(a: T, b: T) -> bool
     divides(b, a)
 }
 
+/// Returns true if `d` is common divisor of `a` and `b`. Otherwise returns false.
+pub fn is_common_divisor<T>(d: T, a: T, b: T) -> bool
+    where T: PartialEq + Rem<Output = T> + Clone + Zero
+{
+    divides(d.clone(), a) && divides(d, b)
+}
+
+/// Returns true if `d` is common multiple of `a` and `b`. Otherwise returns false.
+pub fn is_common_multiple<T>(d: T, a: T, b: T) -> bool
+    where T: PartialEq + Rem<Output = T> + Clone + Zero
+{
+    divides(a, d.clone()) && divides(b, d)
+}
+
 /// Computes greatest common divisor of `a` and `b`.
 /// 
 /// We define the greatest common divisor as the largest element of the set of common divisors if at least one of `a`, `b` is nonzero.
@@ -64,6 +78,8 @@ pub fn lcm<T>(mut a: T, mut b: T) -> T
     (a.clone() * b.clone()) / gcd_noabs(a, b)
 }
 
+/// Computes greatest common divisor of `a` and `b`,
+/// where `a` and `b` are not negative. 
 fn gcd_noabs<T>(a: T, b: T) -> T 
     where T: PartialOrd + Rem<Output = T> + Clone + Zero
 {
@@ -77,8 +93,29 @@ fn gcd_noabs<T>(a: T, b: T) -> T
     }
 }
 
+/// Computes greatest common divisor of `a` and `b`,
+/// where `a` and `b` are positive and `a` > `b`.
 fn gcd_euclid<T>(mut a: T, mut b: T) -> T 
     where T: PartialEq + Rem<Output = T> + Clone + Zero
+{
+    loop {
+        let r = a % b.clone();
+        (a, b) = (b, r.clone());
+        if b == T::zero() { break }
+    }
+    a
+}
+
+/*
+struct GcdExtendedRes<T>
+    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
+{
+    gcd: T,
+    x: T,
+    y: T
+}
+fn gcd_extended<T>(mut a: T, mut b: T) -> GcdExtendedRes<T> 
+    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
 {
     let mut b_clone = b.clone();
     loop {
@@ -91,16 +128,29 @@ fn gcd_euclid<T>(mut a: T, mut b: T) -> T
     a
 }
 
+/// Computes greatest common divisor of `a` and `b`,
+/// where `a` and `b` are positive and `a` > `b`.
+fn gcd_extended_bezout<T>(mut a: T, mut b: T) -> GcdExtendedRes<T> 
+    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
+{
+    loop {
+        let r = a % b.clone();
+        (a, b) = (b, r.clone());
+        if b == T::zero() { break }
+    }
+    a
+}*/
+
 #[cfg(test)]
 mod tests {
 
     use super::*;
 
-    fn test_divides<T>(a: T, b: T, result: bool)
+    fn test_divides<T>(a: T, b: T, res: bool)
         where T: PartialEq + Rem<Output = T> + Clone + Zero
     {
-        assert_eq!(divides(a.clone(), b.clone()), result);
-        assert_eq!(is_divisible_by(b, a), result);
+        assert_eq!(divides(a.clone(), b.clone()), res);
+        assert_eq!(is_divisible_by(b, a), res);
     }
 
     #[test]
