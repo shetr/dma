@@ -95,6 +95,7 @@ pub struct GcdExtendedResult
     pub gcd: i64,
     pub x: i64,
     pub y: i64
+    // TODO: replace x, y with a0, b0 and add a1, b1
 }
 
 /// Computes greatest common divisor of `a` and `b`.
@@ -140,6 +141,110 @@ fn gcd_extended_bezout(mut a: i64, mut b: i64) -> GcdExtendedResult
     GcdExtendedResult { gcd: a, x: a0, y: b0 }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct GcdIteration
+{
+    pub a: i64,
+    pub b: i64
+}
+
+/// TODO: GcdIterator documentation
+#[derive(Debug, Clone, Copy)]
+pub struct GcdIterator
+{
+    i: Option<GcdIteration>
+}
+
+impl GcdIterator {
+    pub fn new(a: i64, b: i64) -> Self {
+        GcdIterator { i: Some(GcdIteration{ a, b })}
+    }
+}
+
+impl Iterator for GcdIterator {
+    type Item = GcdIteration;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let prev_iteration = self.i;
+        if let Some(i) = self.i {
+            self.i = match (i.a, i.b) {
+                (a, b) if a < 0 || b < 0 => {
+                    Some(GcdIteration { a : a.abs(), b : b.abs() })
+                },
+                (_, 0) => {
+                    None
+                },
+                (a, b) if a < b => {
+                    Some(GcdIteration { a : b, b : a })
+                },
+                (a, b) => {
+                    let r = a % b;
+                    Some(GcdIteration { a : b, b : r })
+                }
+            }
+        }
+        prev_iteration
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct GcdExtendedIteration
+{
+    pub a: i64,
+    pub b: i64,
+    pub a0: i64,
+    pub a1: i64,
+    pub b0: i64,
+    pub b1: i64,
+    pub q: i64
+}
+
+impl GcdExtendedIteration {
+    pub fn new(mut a: i64, mut b: i64) -> Self {
+        (a, b) = (a.abs(), b.abs());
+        if a < b {
+            (a, b) = (b, a);
+        }
+        GcdExtendedIteration { a, b, a0: 1, a1: 0, b0: 0, b1: 1, q: 0 }
+    }
+}
+
+/// TODO: GcdExtendedIterator documentation
+#[derive(Debug, Clone, Copy)]
+pub struct GcdExtendedIterator
+{
+    i: Option<GcdExtendedIteration>,
+}
+
+impl GcdExtendedIterator {
+    pub fn new(a: i64, b: i64) -> Self {
+        GcdExtendedIterator { i: Some(GcdExtendedIteration::new(a, b))}
+    }
+}
+
+impl Iterator for GcdExtendedIterator {
+    type Item = GcdExtendedIteration;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let prev_iteration = self.i;
+        if let Some(i) = self.i {
+            self.i = 
+            if i.b == 0 {
+                None
+            } else {
+                let (a, b) = (i.a, i.b);
+                let q = a / b;
+                let r = a - b * q;
+                let (a, b) = (b, r);
+                let (a0, a1) = (i.a1, i.a0 - q * i.a1);
+                let (b0, b1) = (i.b1, i.b0 - q * i.b1);
+                let i = GcdExtendedIteration { a, b, a0, a1, b0, b1, q };
+                Some(i)
+            }
+        }
+        prev_iteration
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -459,4 +564,6 @@ mod tests {
         test_gcd_extended(12, 18, GcdExtendedResult { gcd: 6, x: -1, y: 1});
     }
 
+    // TODO: GcdIterator tests
+    // TODO: GcdExtendedIterator tests
 }
