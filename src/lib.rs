@@ -88,6 +88,8 @@ fn gcd_euclid(mut a: i64, mut b: i64) -> i64
     a
 }
 
+#[derive(PartialEq)]
+#[derive(Debug)]
 pub struct GcdExtendedResult
 {
     pub gcd: i64,
@@ -97,6 +99,7 @@ pub struct GcdExtendedResult
 
 /// Computes greatest common divisor of `a` and `b`.
 /// This is extended variant which also computes `x` and `y` satisfying Bézout's identity: `gcd(a, b) = x*a + y*b`.
+/// If there are more solutions for `x` and `y` only one will be returned.
 pub fn gcd_extended(a: i64, b: i64) -> GcdExtendedResult 
 {
     let mut res = gcd_extended_noabs(a.abs(), b.abs());
@@ -107,10 +110,17 @@ pub fn gcd_extended(a: i64, b: i64) -> GcdExtendedResult
 
 fn gcd_extended_noabs(a: i64, b: i64) -> GcdExtendedResult 
 {
-    if a > b {
-        gcd_extended_bezout(a, b)
-    } else {
-        gcd_extended_bezout(b, a)
+    match (a, b) {
+        (a, b) if a == 0 && b == 0 => GcdExtendedResult { gcd: 0, x: 0, y: 0 },
+        (a, b) if b == 0 => GcdExtendedResult { gcd: a, x: 1, y: 0 },
+        (a, b) if a == 0 => GcdExtendedResult { gcd: b, x: 0, y: 1 },
+        (a, b) if a > b => gcd_extended_bezout(a, b),
+        (a, b) if a < b => {
+            let mut res = gcd_extended_bezout(b, a);
+            (res.x, res.y) = (res.y, res.x);
+            res
+        },
+        (a, _) => GcdExtendedResult { gcd: a, x: 1, y: 0 }
     }
 }
 
@@ -122,7 +132,7 @@ fn gcd_extended_bezout(mut a: i64, mut b: i64) -> GcdExtendedResult
     let mut b1 = 1;
     while b != 0 {
         let q = a / b;
-        let r = b * q - a;
+        let r = a - b * q;
         (a, b) = (b, r);
         (a0, a1) = (a1, a0 - q * a1);
         (b0, b1) = (b1, b0 - q * b1);
@@ -220,33 +230,63 @@ mod tests {
     }
 
     #[test]
-    fn gcd_0() {
+    fn gcd_0_0_0() {
         test_gcd(0, 0, 0);
     }
     #[test]
-    fn gcd_1() {
+    fn gcd_1_1_0() {
         test_gcd(1, 0, 1);
+    }
+    #[test]
+    fn gcd_1_1_1() {
         test_gcd(1, 1, 1);
+    }
+    #[test]
+    fn gcd_1_1_10() {
         test_gcd(1, 10, 1);
+    }
+    #[test]
+    fn gcd_1_2_3() {
         test_gcd(2, 3, 1);
+    }
+    #[test]
+    fn gcd_1_2_5() {
         test_gcd(2, 5, 1);
+    }
+    #[test]
+    fn gcd_1_18_19() {
         test_gcd(18, 19, 1);
     }
     #[test]
-    fn gcd_2() {
+    fn gcd_2_2_6() {
         test_gcd(2, 6, 2);
+    }
+    #[test]
+    fn gcd_2_6_10() {
         test_gcd(6, 10, 2);
+    }
+    #[test]
+    fn gcd_2_10_14() {
         test_gcd(10, 14, 2);
     }
     #[test]
-    fn gcd_3() {
+    fn gcd_3_3_6() {
         test_gcd(3, 6, 3);
+    }
+    #[test]
+    fn gcd_3_6_9() {
         test_gcd(6, 9, 3);
+    }
+    #[test]
+    fn gcd_3_9_12() {
         test_gcd(9, 12, 3);
     }
     #[test]
-    fn gcd_6() {
+    fn gcd_6_6_12() {
         test_gcd(6, 12, 6);
+    }
+    #[test]
+    fn gcd_6_12_18() {
         test_gcd(12, 18, 6);
     }
 
@@ -263,49 +303,160 @@ mod tests {
     }
 
     #[test]
-    fn lcm_0() {
+    fn lcm_0_0_0() {
         test_lcm(0, 0, 0);
+    }
+    #[test]
+    fn lcm_0_1_0() {
         test_lcm(1, 0, 0);
+    }
+    #[test]
+    fn lcm_0_2_0() {
         test_lcm(2, 0, 0);
+    }
+    #[test]
+    fn lcm_0_7_0() {
         test_lcm(7, 0, 0);
     }
     #[test]
-    fn lcm_1() {
+    fn lcm_1_1_1() {
         test_lcm(1, 1, 1);
     }
     #[test]
-    fn lcm_2() {
+    fn lcm_2_2_2() {
         test_lcm(2, 2, 2);
+    }
+    #[test]
+    fn lcm_2_1_2() {
         test_lcm(1, 2, 2);
     }
     #[test]
-    fn lcm_3() {
+    fn lcm_3_3_3() {
         test_lcm(3, 3, 3);
+    }
+    #[test]
+    fn lcm_3_1_3() {
         test_lcm(1, 3, 3);
     }
     #[test]
-    fn lcm_4() {
+    fn lcm_4_1_4() {
         test_lcm(1, 4, 4);
+    }
+    #[test]
+    fn lcm_4_2_4() {
         test_lcm(2, 4, 4);
+    }
+    #[test]
+    fn lcm_4_4_4() {
         test_lcm(4, 4, 4);
     }
     #[test]
-    fn lcm_6() {
+    fn lcm_6_1_6() {
         test_lcm(1, 6, 6);
+    }
+    #[test]
+    fn lcm_6_2_3() {
         test_lcm(2, 3, 6);
+    }
+    #[test]
+    fn lcm_6_6_6() {
         test_lcm(6, 6, 6);
     }
     #[test]
-    fn lcm_10() {
+    fn lcm_10_1_10() {
         test_lcm(1, 10, 10);
+    }
+    #[test]
+    fn lcm_10_2_5() {
         test_lcm(2, 5, 10);
+    }
+    #[test]
+    fn lcm_10_10_10() {
         test_lcm(10, 10, 10);
     }
     #[test]
-    fn lcm_12() {
+    fn lcm_12_1_12() {
         test_lcm(1, 12, 12);
+    }
+    #[test]
+    fn lcm_12_3_4() {
         test_lcm(3, 4, 12);
+    }
+    #[test]
+    fn lcm_12_12_12() {
         test_lcm(12, 12, 12);
+    }
+
+    fn test_gcd_extended(a: i64, b: i64, res: GcdExtendedResult) {
+        assert_eq!(gcd_extended(a, b), res);
+        assert_eq!(gcd_extended(-a, b), GcdExtendedResult { gcd: res.gcd, x: -res.x, y: res.y});
+        assert_eq!(gcd_extended(a, -b), GcdExtendedResult { gcd: res.gcd, x: res.x, y: -res.y});
+        assert_eq!(gcd_extended(-a, -b), GcdExtendedResult { gcd: res.gcd, x: -res.x, y: -res.y});
+        assert_eq!(gcd_extended(b, a), GcdExtendedResult { gcd: res.gcd, x: res.y, y: res.x});
+        assert_eq!(gcd_extended(-b, a), GcdExtendedResult { gcd: res.gcd, x: -res.y, y: res.x});
+        assert_eq!(gcd_extended(b, -a), GcdExtendedResult { gcd: res.gcd, x: res.y, y: -res.x});
+        assert_eq!(gcd_extended(-b, -a), GcdExtendedResult { gcd: res.gcd, x: -res.y, y: -res.x});
+    }
+
+    #[test]
+    fn gcd_extended_0_0_0() {
+        test_gcd_extended(0, 0, GcdExtendedResult { gcd: 0, x: 0, y: 0});
+    }
+    #[test]
+    fn gcd_extended_1_1_0() {
+        test_gcd_extended(1, 0, GcdExtendedResult { gcd: 1, x: 1, y: 0});
+    }
+    #[test]
+    fn gcd_extended_1_1_1() {
+        assert_eq!(gcd_extended(1, 1), GcdExtendedResult { gcd: 1, x: 1, y: 0});
+    }
+    #[test]
+    fn gcd_extended_1_1_10() {
+        test_gcd_extended(1, 10, GcdExtendedResult { gcd: 1, x: 1, y: 0});
+    }
+    #[test]
+    fn gcd_extended_1_2_3() {
+        test_gcd_extended(2, 3, GcdExtendedResult { gcd: 1, x: -1, y: 1});
+    }
+    #[test]
+    fn gcd_extended_1_2_5() {
+        test_gcd_extended(2, 5, GcdExtendedResult { gcd: 1, x: -2, y: 1});
+    }
+    #[test]
+    fn gcd_extended_1_18_19() {
+        test_gcd_extended(18, 19, GcdExtendedResult { gcd: 1, x: -1, y: 1});
+    }
+    #[test]
+    fn gcd_extended_2_2_6() {
+        test_gcd_extended(2, 6, GcdExtendedResult { gcd: 2, x: 1, y: 0});
+    }
+    #[test]
+    fn gcd_extended_2_6_10() {
+        test_gcd_extended(6, 10, GcdExtendedResult { gcd: 2, x: 2, y: -1});
+    }
+    #[test]
+    fn gcd_extended_2_10_14() {
+        test_gcd_extended(10, 14, GcdExtendedResult { gcd: 2, x: 3, y: -2});
+    }
+    #[test]
+    fn gcd_extended_3_3_6() {
+        test_gcd_extended(3, 6, GcdExtendedResult { gcd: 3, x: 1, y: 0});
+    }
+    #[test]
+    fn gcd_extended_3_6_9() {
+        test_gcd_extended(6, 9, GcdExtendedResult { gcd: 3, x: -1, y: 1});
+    }
+    #[test]
+    fn gcd_extended_3_9_12() {
+        test_gcd_extended(9, 12, GcdExtendedResult { gcd: 3, x: -1, y: 1});
+    }
+    #[test]
+    fn gcd_extended_6_6_12() {
+        test_gcd_extended(6, 12, GcdExtendedResult { gcd: 6, x: 1, y: 0});
+    }
+    #[test]
+    fn gcd_extended_6_12_18() {
+        test_gcd_extended(12, 18, GcdExtendedResult { gcd: 6, x: -1, y: 1});
     }
 
 }
