@@ -1,13 +1,4 @@
 
-use std::cmp::PartialEq;
-use std::cmp::PartialOrd;
-use std::ops::Rem;
-use std::ops::Mul;
-use std::ops::Div;
-
-use num_traits::Zero;
-use num_traits::OptAbs;
-
 /// Returns true if `a` divides `b`. Otherwise returns false.
 ///
 /// Let's say that `a` divides `b` if there exists `k` such that `b = k * a`.
@@ -24,69 +15,62 @@ use num_traits::OptAbs;
 /// assert_eq!(divides(5, -10), true);
 /// assert_eq!(divides(5, -7), false);
 /// ```
-pub fn divides<T>(a: T, b: T) -> bool
-    where T: PartialEq + Rem<Output = T> + Zero
+pub fn divides(a: i64, b: i64) -> bool
 {
-    if a != T::zero() { b % a == T::zero() } else { true }
+    if a != 0 { b % a == 0 } else { true }
 }
 
 /// Returns true if `a` is divisible by `b`. Otherwise returns false.
 /// `a` is divisible by `b` if `b` divides `a`. 
 /// Go to [divides] for further information.
-pub fn is_divisible_by<T>(a: T, b: T) -> bool
-    where T: PartialEq + Rem<Output = T> + Zero
+pub fn is_divisible_by(a: i64, b: i64) -> bool
 {
     divides(b, a)
 }
 
 /// Returns true if `d` is common divisor of `a` and `b`. Otherwise returns false.
-pub fn is_common_divisor<T>(d: T, a: T, b: T) -> bool
-    where T: PartialEq + Rem<Output = T> + Clone + Zero
+pub fn is_common_divisor(d: i64, a: i64, b: i64) -> bool
 {
-    divides(d.clone(), a) && divides(d, b)
+    divides(d, a) && divides(d, b)
 }
 
 /// Returns true if `d` is common multiple of `a` and `b`. Otherwise returns false.
-pub fn is_common_multiple<T>(d: T, a: T, b: T) -> bool
-    where T: PartialEq + Rem<Output = T> + Clone + Zero
+pub fn is_common_multiple(d: i64, a: i64, b: i64) -> bool
 {
-    divides(a, d.clone()) && divides(b, d)
+    divides(a, d) && divides(b, d)
 }
 
 /// Computes greatest common divisor of `a` and `b`.
 /// 
 /// We define the greatest common divisor as the largest element of the set of common divisors if at least one of `a`, `b` is nonzero.
 /// Otherwise we define `gcd(0, 0) = 0`.
-pub fn gcd<T>(a: T, b: T) -> T 
-    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
+pub fn gcd(a: i64, b: i64) -> i64
 {
-    gcd_noabs(a.opt_abs(), b.opt_abs())
+    gcd_noabs(a.abs(), b.abs())
 }
 
 /// Computes least common multiple of `a` and `b`.
 /// 
 /// We define the least common multiple as the smallest element of the set of common multiples if both `a`, `b` are nonzero.
 /// Otherwise we define `lmc(a, 0) = lmc(0, b) = 0`.
-pub fn lcm<T>(mut a: T, mut b: T) -> T 
-    where T: PartialOrd + Rem<Output = T> + Mul<Output = T> + Div<Output = T> + Clone + Zero + OptAbs
+pub fn lcm(mut a: i64, mut b: i64) -> i64
 {
-    if a == T::zero() || b == T::zero() {
-        return T::zero();
+    if a == 0 || b == 0 {
+        return 0;
     }
-    a = a.opt_abs();
-    b = b.opt_abs();
-    (a.clone() * b.clone()) / gcd_noabs(a, b)
+    a = a.abs();
+    b = b.abs();
+    (a * b) / gcd_noabs(a, b)
 }
 
 /// Computes greatest common divisor of `a` and `b`,
 /// where `a` and `b` are not negative. 
-fn gcd_noabs<T>(a: T, b: T) -> T 
-    where T: PartialOrd + Rem<Output = T> + Clone + Zero
+fn gcd_noabs(a: i64, b: i64) -> i64
 {
     match (a, b) {
-        (a, b) if a == T::zero() && b == T::zero() => T::zero(),
-        (a, b) if b == T::zero() => a,
-        (a, b) if a == T::zero() => b,
+        (a, b) if a == 0 && b == 0 => 0,
+        (a, b) if b == 0 => a,
+        (a, b) if a == 0 => b,
         (a, b) if a > b => gcd_euclid(a, b),
         (a, b) if a < b => gcd_euclid(b, a),
         (a, _) => a
@@ -95,59 +79,64 @@ fn gcd_noabs<T>(a: T, b: T) -> T
 
 /// Computes greatest common divisor of `a` and `b`,
 /// where `a` and `b` are positive and `a` > `b`.
-fn gcd_euclid<T>(mut a: T, mut b: T) -> T 
-    where T: PartialEq + Rem<Output = T> + Clone + Zero
+fn gcd_euclid(mut a: i64, mut b: i64) -> i64 
 {
-    loop {
-        let r = a % b.clone();
-        (a, b) = (b, r.clone());
-        if b == T::zero() { break }
-    }
-    a
-}
-
-/*
-struct GcdExtendedRes<T>
-    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
-{
-    gcd: T,
-    x: T,
-    y: T
-}
-fn gcd_extended<T>(mut a: T, mut b: T) -> GcdExtendedRes<T> 
-    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
-{
-    let mut b_clone = b.clone();
-    loop {
+    while b != 0 {
         let r = a % b;
-        a = b_clone.clone();
-        b = r.clone();
-        b_clone = b.clone();
-        if b == T::zero() { break }
+        (a, b) = (b, r);
     }
     a
 }
 
-/// Computes greatest common divisor of `a` and `b`,
-/// where `a` and `b` are positive and `a` > `b`.
-fn gcd_extended_bezout<T>(mut a: T, mut b: T) -> GcdExtendedRes<T> 
-    where T: PartialOrd + Rem<Output = T> + Clone + Zero + OptAbs
+pub struct GcdExtendedResult
 {
-    loop {
-        let r = a % b.clone();
-        (a, b) = (b, r.clone());
-        if b == T::zero() { break }
+    pub gcd: i64,
+    pub x: i64,
+    pub y: i64
+}
+
+/// Computes greatest common divisor of `a` and `b`.
+/// This is extended variant which also computes `x` and `y` satisfying Bézout's identity: `gcd(a, b) = x*a + y*b`.
+pub fn gcd_extended(a: i64, b: i64) -> GcdExtendedResult 
+{
+    let mut res = gcd_extended_noabs(a.abs(), b.abs());
+    res.x *= if a >= 0 { 1 } else { -1 };
+    res.y *= if b >= 0 { 1 } else { -1 };
+    res
+}
+
+fn gcd_extended_noabs(a: i64, b: i64) -> GcdExtendedResult 
+{
+    if a > b {
+        gcd_extended_bezout(a, b)
+    } else {
+        gcd_extended_bezout(b, a)
     }
-    a
-}*/
+}
+
+fn gcd_extended_bezout(mut a: i64, mut b: i64) -> GcdExtendedResult 
+{
+    let mut a0 = 1;
+    let mut a1 = 0;
+    let mut b0 = 0;
+    let mut b1 = 1;
+    while b != 0 {
+        let q = a / b;
+        let r = b * q - a;
+        (a, b) = (b, r);
+        (a0, a1) = (a1, a0 - q * a1);
+        (b0, b1) = (b1, b0 - q * b1);
+    }
+    GcdExtendedResult { gcd: a, x: a0, y: b0 }
+}
+
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
 
-    fn test_divides<T>(a: T, b: T, res: bool)
-        where T: PartialEq + Rem<Output = T> + Clone + Zero
+    fn test_divides(a: i64, b: i64, res: bool)
     {
         assert_eq!(divides(a.clone(), b.clone()), res);
         assert_eq!(is_divisible_by(b, a), res);
@@ -219,7 +208,7 @@ mod tests {
     }
 
 
-    fn test_gcd(a: i32, b: i32, res: i32) {
+    fn test_gcd(a: i64, b: i64, res: i64) {
         assert_eq!(gcd(a, b), res);
         assert_eq!(gcd(-a, b), res);
         assert_eq!(gcd(a, -b), res);
@@ -262,7 +251,7 @@ mod tests {
     }
 
 
-    fn test_lcm(a: i32, b: i32, res: i32) {
+    fn test_lcm(a: i64, b: i64, res: i64) {
         assert_eq!(lcm(a, b), res);
         assert_eq!(lcm(-a, b), res);
         assert_eq!(lcm(a, -b), res);
