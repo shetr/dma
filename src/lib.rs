@@ -98,8 +98,8 @@ pub struct GcdExtendedResult
 }
 
 /// Computes greatest common divisor of `a` and `b`.
-/// This is extended variant which also computes `x` and `y` satisfying Bézout's identity: `gcd(a, b) = x*a + y*b`.
-/// If there are more solutions for `x` and `y` only one will be returned.
+/// This is an extended variant which also computes `x` and `y` satisfying Bézout's identity: `gcd(a, b) = x*a + y*b`.
+/// If there are more solutions for `x` and `y`, only one will be returned.
 pub fn gcd_extended(a: i64, b: i64) -> GcdExtendedResult 
 {
     let mut res = gcd_extended_noabs(a.abs(), b.abs());
