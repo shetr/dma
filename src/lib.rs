@@ -88,14 +88,12 @@ fn gcd_euclid(mut a: i64, mut b: i64) -> i64
     a
 }
 
-#[derive(PartialEq)]
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub struct GcdExtendedResult
 {
     pub gcd: i64,
     pub x: i64,
     pub y: i64
-    // TODO: replace x, y with a0, b0 and add a1, b1
 }
 
 /// Computes greatest common divisor of `a` and `b`.
@@ -141,15 +139,15 @@ fn gcd_extended_bezout(mut a: i64, mut b: i64) -> GcdExtendedResult
     GcdExtendedResult { gcd: a, x: a0, y: b0 }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct GcdIteration
 {
     pub a: i64,
     pub b: i64
 }
 
-/// TODO: GcdIterator documentation
-#[derive(Debug, Clone, Copy)]
+/// Iterates through the euclid's alorithm for finging greatest common divisor.
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct GcdIterator
 {
     i: Option<GcdIteration>
@@ -187,7 +185,7 @@ impl Iterator for GcdIterator {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct GcdExtendedIteration
 {
     pub a: i64,
@@ -209,8 +207,8 @@ impl GcdExtendedIteration {
     }
 }
 
-/// TODO: GcdExtendedIterator documentation
-#[derive(Debug, Clone, Copy)]
+/// Iterates through extended version of the euclid's alorithm for finging greatest common divisor.
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct GcdExtendedIterator
 {
     i: Option<GcdExtendedIteration>,
@@ -564,6 +562,73 @@ mod tests {
         test_gcd_extended(12, 18, GcdExtendedResult { gcd: 6, x: -1, y: 1});
     }
 
-    // TODO: GcdIterator tests
-    // TODO: GcdExtendedIterator tests
+    #[test]
+    fn gcd_iterator_0_0() {
+        let mut gcd_it = GcdIterator::new(0, 0);
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a: 0, b: 0 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+    
+    #[test]
+    fn gcd_iterator_1_1() {
+        let mut gcd_it = GcdIterator::new(1, 1);
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a: 1, b: 1 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a: 1, b: 0 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+
+    #[test]
+    fn gcd_iterator_m9_m12() {
+        let mut gcd_it = GcdIterator::new(-9, -12);
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a: -9, b: -12 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  9, b:  12 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a: 12, b:   9 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  9, b:   3 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  3, b:   0 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+    
+    #[test]
+    fn gcd_iterator_9_m12() {
+        let mut gcd_it = GcdIterator::new(9, -12);
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  9, b: -12 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  9, b:  12 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a: 12, b:   9 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  9, b:   3 }));
+        assert_eq!(gcd_it.next(), Some(GcdIteration{ a:  3, b:   0 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+    
+    #[test]
+    fn gcd_extended_iterator_0_0() {
+        let mut gcd_it = GcdExtendedIterator::new(0, 0);
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a: 0, b: 0, a0: 1, a1: 0, b0: 0, b1: 1, q: 0 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+    
+    #[test]
+    fn gcd_extended_iterator_1_1() {
+        let mut gcd_it = GcdExtendedIterator::new(1, 1);
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a: 1, b: 1, a0: 1, a1: 0, b0: 0, b1:  1, q: 0 }));
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a: 1, b: 0, a0: 0, a1: 1, b0: 1, b1: -1, q: 1 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+    
+    #[test]
+    fn gcd_extended_iterator_m9_m12() {
+        let mut gcd_it = GcdExtendedIterator::new(-9, -12);
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a: 12, b: 9, a0: 1, a1:  0, b0:  0, b1:  1, q: 0 }));
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a:  9, b: 3, a0: 0, a1:  1, b0:  1, b1: -1, q: 1 }));
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a:  3, b: 0, a0: 1, a1: -3, b0: -1, b1:  4, q: 3 }));
+        assert_eq!(gcd_it.next(), None);
+    }
+    
+    #[test]
+    fn gcd_extended_iterator_9_m12() {
+        let mut gcd_it = GcdExtendedIterator::new(9, -12);
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a: 12, b: 9, a0: 1, a1:  0, b0:  0, b1:  1, q: 0 }));
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a:  9, b: 3, a0: 0, a1:  1, b0:  1, b1: -1, q: 1 }));
+        assert_eq!(gcd_it.next(), Some(GcdExtendedIteration{ a:  3, b: 0, a0: 1, a1: -3, b0: -1, b1:  4, q: 3 }));
+        assert_eq!(gcd_it.next(), None);
+    }
 }
